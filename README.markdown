@@ -181,6 +181,52 @@ $ COVERAGE=1 rove example.asd
 * [fukamachi/sanitized-params](https://github.com/fukamachi/sanitized-params)
 * [fukamachi/jsonrpc](https://github.com/fukamachi/jsonrpc) (package-inferred-system)
 
+## Running Rove tests on Travis CI
+
+Although Travis CI does not yet officially support Common Lisp, it can still integrate your Rove tests using [Roswell](https://github.com/roswell/roswell/wiki/Travis-CI).
+
+Here is a `.travis.yml` template for running Rove on Travis CI:
+
+```common-lisp
+language: common-lisp
+sudo: false
+
+env:
+  global:
+    - ROSWELL_BRANCH=release # or master, etc.
+    - PATH=~/.roswell/bin:$PATH
+    - ROSWELL_INSTALL_DIR=$HOME/.roswell
+  matrix:
+    - LISP=sbcl
+    - LISP=ccl
+    - LISP=clisp
+    - LISP=abcl
+    - LISP=ecl
+
+matrix:
+  allow_failures:
+    - env: LISP=ecl
+
+# Additional packages needed for ABCL and CLISP:
+addons:
+  apt:
+    packages:
+      - libc6-i386
+      - openjdk-8-jre
+
+cache:
+  directories:
+    - $HOME/.roswell
+    - $HOME/.config/common-lisp
+
+install:
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+  - ros install rove # or for the latest Rove master: `ros install fukamachi/rove`
+
+script:
+  - rove my-tests.asd
+```
+
 ## Portability
 
 Developed for SBCL and tested successfully with:
